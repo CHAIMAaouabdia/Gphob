@@ -9,11 +9,13 @@ import StarBadge from './StarBadge';
 import CongratsScreen from './CongratsScreen';
 import ThemeToggle from './ThemeToggle';
 import PlatformerGame from './PlatformerGame';
+import type { QuestionnaireConfig } from '@/data/gameConfig';
 
 interface GameJourneyProps {
   sessionId: string | null;
   phobiaType: string;
   likeType: string;
+  config: QuestionnaireConfig;
   onBack: () => void;
 }
 
@@ -22,7 +24,7 @@ const LIKE_LABEL: Record<LikeId, string> = Object.fromEntries(LIKES.map((l) => [
 
 type Mode = 'story' | 'platformer' | null;
 
-export default function GameJourney({ sessionId, phobiaType, likeType, onBack }: GameJourneyProps) {
+export default function GameJourney({ sessionId, phobiaType, likeType, config, onBack }: GameJourneyProps) {
   const { profile, signOut } = useAuth();
   const phobia = getPhobia(phobiaType as PhobiaId);
   const total = phobia.levels.length;
@@ -163,6 +165,7 @@ export default function GameJourney({ sessionId, phobiaType, likeType, onBack }:
       <PlatformerGame
         phobia={phobia}
         likeType={likeType as LikeId}
+        config={config}
         level={level}
         levelIndex={levelIndex}
         totalLevels={total}

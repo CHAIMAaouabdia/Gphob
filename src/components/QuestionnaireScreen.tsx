@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth';
 import ThemeToggle from './ThemeToggle';
 
 interface QuestionnaireScreenProps {
-  onComplete: (sessionId: string, phobiaType: string, likeType: string) => void;
+  onComplete: (sessionId: string, phobiaType: string, likeType: string, answers: string[]) => void;
   onBack: () => void;
 }
 
@@ -38,7 +38,7 @@ export default function QuestionnaireScreen({ onComplete, onBack }: Questionnair
     const { data, error } = await supabase.from('questionnaire_sessions').insert({ patient_id: profile?.id, answers: answerIndices, phobia_type: phobiaInfo.phobiaType, intensity, like_type: likeAnswer, recommended: `مسار علاجي تدريجي لمخاوف ${phobiaInfo.label}` }).select().maybeSingle();
     setSaving(false);
     if (error || !data) return;
-    onComplete(data.id, phobiaInfo.phobiaType, likeAnswer);
+    onComplete(data.id, phobiaInfo.phobiaType, likeAnswer, answers);
   }
 
   const pct = Math.round(((currentQ + 1) / QUESTIONS.length) * 100);

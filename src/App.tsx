@@ -8,6 +8,7 @@ import PatientDashboard from '@/components/PatientDashboard';
 import TherapistDashboard from '@/components/TherapistDashboard';
 import GameJourney from '@/components/GameJourney';
 import VRModeScreen from '@/components/VRModeScreen';
+import { buildConfig, type QuestionnaireConfig } from '@/data/gameConfig';
 
 type View =
   | 'landing'
@@ -18,6 +19,8 @@ type View =
   | 'game'
   | 'vr';
 
+const DEFAULT_CONFIG = buildConfig(['heights', 'during', 'medium', 'sometimes', 'sometimes_avoid', 'heartbeat', 'years', 'slight', 'meditation', 'cats']);
+
 export default function App() {
   const { session, profile, loading } = useAuth();
   const { addNotification } = useNotifications();
@@ -27,9 +30,11 @@ export default function App() {
     phobiaType: 'heights',
     likeType: 'cats',
   });
+  const [gameConfig, setGameConfig] = useState<QuestionnaireConfig>(DEFAULT_CONFIG);
 
-  function goToGame(sessionId: string | null, phobiaType: string, likeType: string) {
+  function goToGame(sessionId: string | null, phobiaType: string, likeType: string, answers?: string[]) {
     setGameData({ sessionId, phobiaType, likeType });
+    if (answers) setGameConfig(buildConfig(answers));
     setView('game');
   }
 
@@ -59,7 +64,7 @@ export default function App() {
     if (view === 'questionnaire') {
       return (
         <QuestionnaireScreen
-          onComplete={(sessionId, phobiaType, likeType) => goToGame(sessionId, phobiaType, likeType)}
+          onComplete={(sessionId, phobiaType, likeType, answers) => goToGame(sessionId, phobiaType, likeType, answers)}
           onBack={() => setView('patient-dashboard')}
         />
       );
@@ -71,6 +76,7 @@ export default function App() {
           sessionId={gameData.sessionId}
           phobiaType={gameData.phobiaType}
           likeType={gameData.likeType}
+          config={gameConfig}
           onBack={() => setView('patient-dashboard')}
         />
       );
