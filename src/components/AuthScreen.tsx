@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Lock, User, Stethoscope, UserCircle, ChevronLeft, Venus, Mars, Calendar } from 'lucide-react';
+import { Mail, Lock, User, Stethoscope, UserCircle, ChevronLeft, Calendar } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import type { UserRole } from '@/lib/supabase';
 import Header from './Header';
@@ -130,7 +130,7 @@ export default function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
                           gender === 'male' ? 'border-sky-400 bg-sky-50 dark:bg-sky-900/30' : 'border-sky-100 dark:border-slate-600 bg-white/60 dark:bg-slate-700/40 hover:border-sky-300'
                         }`}
                       >
-                        <Mars className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                        <span className="text-lg">♂</span>
                         <span className="text-sm font-semibold text-sky-900 dark:text-sky-100">ذكر</span>
                       </button>
                       <button
@@ -140,7 +140,7 @@ export default function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
                           gender === 'female' ? 'border-pink-400 bg-pink-50 dark:bg-pink-900/30' : 'border-sky-100 dark:border-slate-600 bg-white/60 dark:bg-slate-700/40 hover:border-sky-300'
                         }`}
                       >
-                        <Venus className="w-5 h-5 text-pink-500 dark:text-pink-400" />
+                        <span className="text-lg">♀</span>
                         <span className="text-sm font-semibold text-sky-900 dark:text-sky-100">أنثى</span>
                       </button>
                     </div>

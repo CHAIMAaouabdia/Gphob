@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Check, ChevronLeft, Heart, LogOut, Gamepad2, BookOpen } from 'lucide-react';
+import { Check, ChevronLeft, Heart, Gamepad2, BookOpen } from 'lucide-react';
 import type { Level, LikeId } from '@/data/journey';
 import { LIKES, getPhobia, type PhobiaId } from '@/data/journey';
 import { supabase, type GameProgressRow } from '@/lib/supabase';
@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth';
 import ProgressBar from './ProgressBar';
 import StarBadge from './StarBadge';
 import CongratsScreen from './CongratsScreen';
-import ThemeToggle from './ThemeToggle';
+import Header from './Header';
 import PlatformerGame from './PlatformerGame';
 import type { QuestionnaireConfig } from '@/data/gameConfig';
 
@@ -25,7 +25,7 @@ const LIKE_LABEL: Record<LikeId, string> = Object.fromEntries(LIKES.map((l) => [
 type Mode = 'story' | 'platformer' | null;
 
 export default function GameJourney({ sessionId, phobiaType, likeType, config, onBack }: GameJourneyProps) {
-  const { profile, signOut } = useAuth();
+  const { profile } = useAuth();
   const phobia = getPhobia(phobiaType as PhobiaId);
   const total = phobia.levels.length;
   const [progressRow, setProgressRow] = useState<GameProgressRow | null>(null);
@@ -90,16 +90,9 @@ export default function GameJourney({ sessionId, phobiaType, likeType, config, o
   // Mode selection screen — shown at the start of each level
   if (mode === null) {
     return (
-      <div className="min-h-[100dvh] flex flex-col px-6 py-8 anim-fade">
-        <div className="max-w-md mx-auto w-full flex flex-col gap-5">
-          <div className="flex items-center justify-between">
-            <button onClick={onBack} className="text-sm text-sky-600 dark:text-sky-400 hover:text-sky-800 transition">← رجوع</button>
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-              <button onClick={signOut} className="p-2 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-slate-700/60 dark:hover:bg-slate-600/60 text-sky-600 dark:text-slate-300 transition" title="خروج"><LogOut className="w-4 h-4" /></button>
-            </div>
-          </div>
-
+      <div className="min-h-[100dvh] flex flex-col anim-fade">
+        <Header sectionLabel={`رحلة العلاج · المستوى ${levelIndex + 1}/${total}`} leftContent={<button onClick={onBack} className="text-sm text-sky-600 dark:text-sky-400 hover:text-sky-800 transition">← رجوع</button>} />
+        <div className="max-w-md mx-auto w-full flex flex-col gap-5 px-6 py-8">
           <ProgressBar current={levelIndex + 1} total={total} />
 
           <h2 className="text-xl font-bold text-sky-950 dark:text-sky-50 leading-snug anim-fade-up">{level.title}</h2>
@@ -180,16 +173,9 @@ export default function GameJourney({ sessionId, phobiaType, likeType, config, o
 
   // Story mode (classic)
   return (
-    <div className="min-h-[100dvh] flex flex-col px-6 py-8 anim-fade">
-      <div className="max-w-md mx-auto w-full flex flex-col gap-5">
-        <div className="flex items-center justify-between">
-          <button onClick={() => setMode(null)} className="text-sm text-sky-600 dark:text-sky-400 hover:text-sky-800 transition">← تغيير الوضع</button>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <button onClick={signOut} className="p-2 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-slate-700/60 dark:hover:bg-slate-600/60 text-sky-600 dark:text-slate-300 transition" title="خروج"><LogOut className="w-4 h-4" /></button>
-          </div>
-        </div>
-
+    <div className="min-h-[100dvh] flex flex-col anim-fade">
+      <Header sectionLabel="مشهد هادئ" leftContent={<button onClick={() => setMode(null)} className="text-sm text-sky-600 dark:text-sky-400 hover:text-sky-800 transition">← تغيير الوضع</button>} />
+      <div className="max-w-md mx-auto w-full flex flex-col gap-5 px-6 py-8">
         <ProgressBar current={levelIndex + 1} total={total} />
 
         <h2 className="text-xl font-bold text-sky-950 dark:text-sky-50 leading-snug anim-fade-up">{level.title}</h2>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ChevronRight, Glasses, Play, Wifi, WifiOff, CheckCircle2, Info, Monitor } from 'lucide-react';
-import Logo from './Logo';
-import ThemeToggle from './ThemeToggle';
+import Header from './Header';
 import type { PhobiaId, LikeId } from '@/data/journey';
 import { getPhobia, LIKES } from '@/data/journey';
 
@@ -31,19 +30,9 @@ export default function VRModeScreen({ phobiaType, likeType, onBack }: VRModeScr
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col px-6 py-8 anim-fade">
-      <div className="max-w-lg mx-auto w-full flex flex-col gap-6">
-        {/* Top bar */}
-        <div className="flex items-center justify-between">
-          <button onClick={onBack} className="flex items-center gap-1 text-sm text-sky-600 dark:text-sky-400 hover:text-sky-800 transition">
-            <ChevronRight className="w-4 h-4" />
-            رجوع
-          </button>
-          <div className="flex items-center gap-3">
-            <Logo size={36} showText textClassName="text-base text-sky-950 dark:text-sky-50" />
-            <ThemeToggle />
-          </div>
-        </div>
+    <div className="min-h-[100dvh] flex flex-col anim-fade">
+      <Header sectionLabel="الواقع الافتراضي" leftContent={<button onClick={onBack} className="flex items-center gap-1 text-sm text-sky-600 dark:text-sky-400 hover:text-sky-800 transition"><ChevronRight className="w-4 h-4" />رجوع</button>} />
+      <div className="max-w-lg mx-auto w-full flex flex-col gap-6 px-6 py-8">
 
         {/* Header */}
         <div className="text-center anim-fade-up">

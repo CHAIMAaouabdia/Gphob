@@ -1,11 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
-import { LogOut, Users, Activity, TrendingUp, Heart, Clock, ChevronLeft, Target, Award, AlertCircle, Stethoscope, Mail, ClipboardList, Trophy } from 'lucide-react';
+import { Users, Activity, TrendingUp, Heart, Clock, ChevronLeft, Target, Award, AlertCircle, Stethoscope, Mail, ClipboardList, Trophy } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { supabase, type GameProgressRow, type QuestionnaireSession, type Profile, type PatientProfile } from '@/lib/supabase';
 import { PHOBIAS, getPhobia } from '@/data/journey';
-import Logo from './Logo';
-import ThemeToggle from './ThemeToggle';
-import NotificationBell from './NotificationBell';
+import Header from './Header';
 import { useNotifications } from '@/lib/notifications';
 
 interface PatientWithInfo {
@@ -16,7 +14,7 @@ interface PatientWithInfo {
 }
 
 export default function TherapistDashboard() {
-  const { profile, signOut } = useAuth();
+  const { profile } = useAuth();
   const { addNotification } = useNotifications();
   const [patients, setPatients] = useState<PatientWithInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,18 +96,15 @@ export default function TherapistDashboard() {
 
     return (
       <div className="min-h-[100dvh] anim-fade">
-        <header className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-b border-sky-100 dark:border-slate-700 sticky top-0 z-10">
-          <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+        <Header
+          sectionLabel={p.profile.full_name}
+          leftContent={
             <button onClick={() => setSelectedPatient(null)} className="text-sm text-sky-600 dark:text-sky-400 hover:text-sky-800 transition flex items-center gap-1">
               <ChevronLeft className="w-4 h-4" />
               رجوع لقائمة المرضى
             </button>
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-bold text-sky-950 dark:text-sky-50">{p.profile.full_name}</h1>
-              <ThemeToggle />
-            </div>
-          </div>
-        </header>
+          }
+        />
 
         <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
           {/* Patient overview */}
@@ -204,22 +199,7 @@ export default function TherapistDashboard() {
 
   return (
     <div className="min-h-[100dvh] anim-fade">
-      <header className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-b border-sky-100 dark:border-slate-700 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Logo size={40} showText textClassName="text-lg text-sky-950 dark:text-sky-50" />
-            <span className="text-xs text-sky-600 dark:text-slate-400 mr-1">لوحة المعالج</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-sky-800 dark:text-slate-300 hidden sm:block">{profile?.full_name}</span>
-            <NotificationBell />
-            <ThemeToggle />
-            <button onClick={signOut} className="p-2 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-slate-700/60 dark:hover:bg-slate-600/60 text-sky-600 dark:text-slate-300 transition" title="تسجيل الخروج">
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header sectionLabel="لوحة المعالج" />
 
       <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
         {/* Welcome */}
