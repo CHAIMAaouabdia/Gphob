@@ -148,6 +148,11 @@ export function getPhobiaObjects(phobiaType: string): PhobiaObject[] {
         { id: 'c4', emoji: '😰', label: 'خوف', interaction: 'transform', transformEmoji: '😊', transformLabel: 'ثقة', points: 15 },
       ];
     default:
-      return [];
+      return [
+        { id: 'o1', emoji: '🎯', label: 'الهدف', interaction: 'appear', points: 5 },
+        { id: 'o2', emoji: '🌫️', label: 'ضباب الخوف', interaction: 'fade', points: 10 },
+        { id: 'o3', emoji: '✨', label: 'نور', interaction: 'appear', points: 5 },
+        { id: 'o4', emoji: '😰', label: 'خوف', interaction: 'transform', transformEmoji: '😌', transformLabel: 'هدوء', points: 15 },
+      ];
   }
 }

@@ -1,4 +1,4 @@
-export type PhobiaId = 'heights' | 'spiders' | 'enclosed' | 'crowds';
+export type PhobiaId = 'heights' | 'spiders' | 'enclosed' | 'crowds' | 'other';
 export type LikeId = 'cats' | 'dogs' | 'nature' | 'sport' | 'music';
 
 export interface Level {
@@ -541,4 +541,70 @@ export function getPhobia(id: PhobiaId): Phobia {
   const p = PHOBIAS.find((x) => x.id === id);
   if (!p) throw new Error(`Phobia not found: ${id}`);
   return p;
+}
+
+/**
+ * Generic 10-level exposure progression for any custom phobia.
+ * Each level gradually increases exposure intensity.
+ */
+const GENERIC_LEVEL_TEMPLATES = [
+  { title: 'المستوى 1 · التعارف الأول', scene: 'تتعرّف على {phobia} من خلال وصف هادئ وموضوعي. لا اقتراب، فقط قراءة وتأمّل.', mission: 'اقرأ الوصف وتنفّس ثلاث مرات. أنت في مكان آمن ولا شيء يحدث.', encouragement: 'الخطوة الأولى هي المعرفة. أنت تبدأ بوعي.' },
+  { title: 'المستوى 2 · صورة بعيدة', scene: 'تشاهد صورة لـ{phobia} من مسافة بعيدة. التفاصيل غير واضحة، مجرد شكل عام.', mission: 'انظر إلى الصورة لمدة عشر ثوانٍ ثم ارفع بصرك. كرّر مرتين.', encouragement: 'رأيت الهدف من بعيد ولم تهرب. بداية جيدة.' },
+  { title: 'المستوى 3 · صورة أوضح', scene: 'الآن تظهر صورة أوضح لـ{phobia}. تفاصيل أكثر، لكنها لا تزال مجرد صورة على شاشة.', mission: 'ركّز على تفصيل واحد في الصورة لمدة 15 ثانية. تنفّس ببطء.', encouragement: 'التفاصيل لا تؤذي. أنت تتعوّد.' },
+  { title: 'المستوى 4 · من زاوية مختلفة', scene: 'ترى {phobia} من زاوية مختلفة. المنظور يتغيّر، لكن المسافة لا تزال آمنة.', mission: 'تأمّل المشهد من الزاوية الجديدة وعدّ ثلاثة أشياء تراها حول الهدف.', encouragement: 'تغيير المنظور يغيّر الإحساس. أنت تتقدّم.' },
+  { title: 'المستوى 5 · أقرب قليلاً', scene: 'الصورة تكبر قليلاً. {phobia} أوضح الآن، لكنك لا تزال خلف الشاشة بأمان.', mission: 'ابقَ ينظرًا للصورة لمدة 30 ثانية. تنفّس بإيقاع منتظم.', encouragement: 'منتصف الطريق. الاقتراب لا يعني الخطر.' },
+  { title: 'المستوى 6 · مشهد متحرك', scene: 'تشاهد مقطعًا قصيرًا لـ{phobia} يتحرك ببطء. الحركة طبيعية وغير مفاجئة.', mission: 'شاهد المقطع كاملًا دون أن تغلق عينيك. تنفّس بعمق.', encouragement: 'الحركة لم تزد خوفك. أنت أقوى من الافتراض.' },
+  { title: 'المستوى 7 · في بيئة مألوفة', scene: 'تتخيّل {phobia} في بيئة مألوفة لك: منزلك أو غرفتك. كل شيء آخر حولك آمن ومعهود.', mission: 'تخيّل المشهد بوضوح وابقَ مسترخيًا في مكانك لمدة دقيقة.', encouragement: 'دمج الخوف مع الأمان. عقلك يتعلّم.' },
+  { title: 'المستوى 8 · مواجهة تدريجية', scene: 'تتخيّل نفسك تقترب من {phobia} خطوة بخطوة. كل خططة واعية ومحسوبة.', mission: 'تخيّل ثلاث خطوات اقتراب. بعد كل خطوة تنفّس بعمق قبل التالية.', encouragement: 'أنت من يقرر الاقتراب. السيطرة لك.' },
+  { title: 'المستوى 9 · بصحبة هادئة', scene: 'تتخيّل نفسك قريبًا من {phobia} مع {like} بجانبك. الرفيق يمنحك الطمأنينة.', mission: 'تأمّل المشهد لمدة دقيقة كاملة مع تنفّس عميق. اشعر بدعم رفيقك.', encouragement: 'مع رفيقك، الخوف يصغر. أنت لست وحدك.' },
+  { title: 'المستوى 10 · التقبّل', scene: 'تنظر إلى {phobia} بثبات وهدوء. لم يعد تهديدًا، بل جزء من العالم من حولك.', mission: 'تنفّس بعمق واقرأ بقلبك: "أنا بأمان. هذا الخوف لا يتحكم بي."', encouragement: 'بلغت نهاية الرحلة. أنت حرّ مما كنت تخافه.' },
+];
+
+const GENERIC_IMAGES = [
+  'https://images.pexels.com/photos/1108572/pexels-photo-1108572.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+  'https://images.pexels.com/photos/1183434/pexels-photo-1183434.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+  'https://images.pexels.com/photos/167964/pexels-photo-167964.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+  'https://images.pexels.com/photos/3408353/pexels-photo-3408353.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+  'https://images.pexels.com/photos/325185/pexels-photo-325185.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+  'https://images.pexels.com/photos/3951385/pexels-photo-3951385.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+  'https://images.pexels.com/photos/3556340/pexels-photo-3556340.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+  'https://images.pexels.com/photos/3782/pexels-photo-3782.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+  'https://images.pexels.com/photos/1547248/pexels-photo-1547248.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+  'https://images.pexels.com/photos/917510/pexels-photo-917510.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+];
+
+export function generateCustomPhobia(
+  customLabel: string,
+  likeId: LikeId,
+  config: { intensity: number; calmingStrategy: string; symptom: string },
+): Phobia {
+  const likeLabel = LIKES.find((l) => l.id === likeId)?.label ?? 'رفيقك';
+  const levels: Level[] = GENERIC_LEVEL_TEMPLATES.map((tpl, i) => ({
+    index: i,
+    title: tpl.title,
+    scene: tpl.scene.replace(/\{phobia\}/g, customLabel).replace(/\{like\}/g, likeLabel),
+    mission: tpl.mission.replace(/\{phobia\}/g, customLabel).replace(/\{like\}/g, likeLabel),
+    image: GENERIC_IMAGES[i] || GENERIC_IMAGES[0],
+    alt: `مشهد تعرّض تدريجي لـ${customLabel}`,
+    encouragement: tpl.encouragement,
+  }));
+  return {
+    id: 'other',
+    label: customLabel,
+    emoji: '🎯',
+    levels,
+  };
+}
+
+/** Returns a phobia by id, generating a custom one if needed */
+export function getOrCreatePhobia(
+  id: PhobiaId,
+  customLabel?: string,
+  likeId?: LikeId,
+  config?: { intensity: number; calmingStrategy: string; symptom: string },
+): Phobia {
+  if (id === 'other' && customLabel) {
+    return generateCustomPhobia(customLabel, likeId || 'cats', config || { intensity: 5, calmingStrategy: 'meditation', symptom: 'heartbeat' });
+  }
+  return getPhobia(id);
 }

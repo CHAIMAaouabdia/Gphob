@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Check, ChevronLeft, Heart, Gamepad2, BookOpen } from 'lucide-react';
-import type { Level, LikeId } from '@/data/journey';
-import { LIKES, getPhobia, type PhobiaId } from '@/data/journey';
+import { Check, ChevronLeft, Heart } from 'lucide-react';
+import type { Level, LikeId, PhobiaId } from '@/data/journey';
+import { LIKES, getOrCreatePhobia, getPhobia, type Phobia } from '@/data/journey';
 import { supabase, type GameProgressRow } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import ProgressBar from './ProgressBar';
 import StarBadge from './StarBadge';
 import CongratsScreen from './CongratsScreen';
 import Header from './Header';
-import PlatformerGame from './PlatformerGame';
 import type { QuestionnaireConfig } from '@/data/gameConfig';
 
 interface GameJourneyProps {
@@ -16,24 +15,22 @@ interface GameJourneyProps {
   phobiaType: string;
   likeType: string;
   config: QuestionnaireConfig;
+  customPhobiaLabel?: string;
   onBack: () => void;
 }
 
 const LIKE_EMOJI: Record<LikeId, string> = Object.fromEntries(LIKES.map((l) => [l.id, l.emoji])) as Record<LikeId, string>;
 const LIKE_LABEL: Record<LikeId, string> = Object.fromEntries(LIKES.map((l) => [l.id, l.label])) as Record<LikeId, string>;
 
-type Mode = 'story' | 'platformer' | null;
-
-export default function GameJourney({ sessionId, phobiaType, likeType, config, onBack }: GameJourneyProps) {
+export default function GameJourney({ sessionId, phobiaType, likeType, config, customPhobiaLabel, onBack }: GameJourneyProps) {
   const { profile } = useAuth();
-  const phobia = getPhobia(phobiaType as PhobiaId);
+  const phobia: Phobia = getOrCreatePhobia(phobiaType as PhobiaId, customPhobiaLabel, likeType as LikeId, { intensity: config.intensity, calmingStrategy: config.calmingStrategy, symptom: config.symptom });
   const total = phobia.levels.length;
   const [progressRow, setProgressRow] = useState<GameProgressRow | null>(null);
   const [levelIndex, setLevelIndex] = useState(0);
   const [done, setDone] = useState(false);
   const [showCongrats, setShowCongrats] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [mode, setMode] = useState<Mode>(null);
 
   useEffect(() => {
     if (!profile) return;
@@ -70,7 +67,6 @@ export default function GameJourney({ sessionId, phobiaType, likeType, config, o
       const next = levelIndex + 1;
       setLevelIndex(next);
       setDone(false);
-      setMode(null);
       await updateProgress(next, progressRow?.completed_levels || [], 'in_progress');
     }
   }
@@ -87,94 +83,16 @@ export default function GameJourney({ sessionId, phobiaType, likeType, config, o
   const isLast = levelIndex === total - 1;
   const completedCount = (progressRow?.completed_levels || []).length;
 
-  // Mode selection screen — shown at the start of each level
-  if (mode === null) {
-    return (
-      <div className="min-h-[100dvh] flex flex-col anim-fade">
-        <Header sectionLabel={`رحلة العلاج · المستوى ${levelIndex + 1}/${total}`} leftContent={<button onClick={onBack} className="text-sm text-sky-600 dark:text-sky-400 hover:text-sky-800 transition">← رجوع</button>} />
-        <div className="max-w-md mx-auto w-full flex flex-col gap-5 px-6 py-8">
-          <ProgressBar current={levelIndex + 1} total={total} />
-
-          <h2 className="text-xl font-bold text-sky-950 dark:text-sky-50 leading-snug anim-fade-up">{level.title}</h2>
-
-          <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-sky-100 dark:border-slate-700 p-5 anim-fade-up">
-            <p className="text-sky-900/90 dark:text-slate-200 leading-loose text-[15px]">{level.scene}</p>
-          </div>
-
-          <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-5 anim-fade-up">
-            <p className="text-xs font-bold tracking-wider text-emerald-700 dark:text-emerald-400 mb-1.5">مهمّتك</p>
-            <p className="text-emerald-900/90 dark:text-emerald-200/90 leading-loose text-[15px]">{level.mission}</p>
-          </div>
-
-          <div className="text-center pt-2">
-            <p className="text-sm font-semibold text-sky-800 dark:text-slate-300 mb-4">اختر طريقة اجتياز المستوى</p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3">
-            {/* Platformer mode */}
-            <button
-              onClick={() => setMode('platformer')}
-              className="group flex items-center gap-4 rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 dark:from-sky-600 dark:to-emerald-600 p-5 text-white text-right shadow-lg shadow-sky-200/40 dark:shadow-sky-900/30 hover:scale-[1.02] active:scale-95 transition-all anim-fade-up"
-            >
-              <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                <Gamepad2 className="w-7 h-7" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold mb-0.5">لعبة تفاعلية</h3>
-                <p className="text-sm text-white/85 leading-relaxed">اقفز، اجمع النجوم، واصل إلى الهدف في لعبة ممتعة بأسلوب المنصّات</p>
-              </div>
-              <ChevronLeft className="w-6 h-6 flex-shrink-0 group-hover:-translate-x-1 transition-transform" />
-            </button>
-
-            {/* Story mode (classic) */}
-            <button
-              onClick={() => setMode('story')}
-              className="group flex items-center gap-4 rounded-2xl bg-white dark:bg-slate-800 border-2 border-sky-200 dark:border-slate-600 hover:border-emerald-300 dark:hover:border-emerald-700 p-5 text-right shadow-sm hover:shadow-md transition-all anim-fade-up"
-            >
-              <div className="w-14 h-14 rounded-xl bg-sky-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
-                <BookOpen className="w-7 h-7 text-sky-600 dark:text-sky-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-sky-950 dark:text-sky-50 mb-0.5">مشهد هادئ</h3>
-                <p className="text-sm text-sky-700/70 dark:text-slate-400 leading-relaxed">اقرأ المشهد، تأمّل الصورة، وأنهِ المستوى بطمأنينة</p>
-              </div>
-              <ChevronLeft className="w-6 h-6 flex-shrink-0 text-sky-400 group-hover:-translate-x-1 transition-transform" />
-            </button>
-          </div>
-
-          {completedCount > 0 && (
-            <div className="rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-emerald-200 dark:border-emerald-800 p-4 text-center">
-              <StarBadge level={completedCount - 1} total={total} />
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // Platformer mode
-  if (mode === 'platformer') {
-    return (
-      <PlatformerGame
-        phobia={phobia}
-        likeType={likeType as LikeId}
-        config={config}
-        level={level}
-        levelIndex={levelIndex}
-        totalLevels={total}
-        onWin={async () => {
-          if (!done) await handleComplete();
-          await handleNext();
-        }}
-        onBack={() => setMode(null)}
-      />
-    );
-  }
-
-  // Story mode (classic)
   return (
     <div className="min-h-[100dvh] flex flex-col anim-fade">
-      <Header sectionLabel="مشهد هادئ" leftContent={<button onClick={() => setMode(null)} className="text-sm text-sky-600 dark:text-sky-400 hover:text-sky-800 transition">← تغيير الوضع</button>} />
+      <Header
+        sectionLabel={`رحلة الخيال · المستوى ${levelIndex + 1}/${total}`}
+        leftContent={
+          <button onClick={onBack} className="text-sm text-sky-600 dark:text-sky-400 hover:text-sky-800 transition">
+            ← رجوع
+          </button>
+        }
+      />
       <div className="max-w-md mx-auto w-full flex flex-col gap-5 px-6 py-8">
         <ProgressBar current={levelIndex + 1} total={total} />
 
@@ -220,3 +138,6 @@ export default function GameJourney({ sessionId, phobiaType, likeType, config, o
     </div>
   );
 }
+
+// Re-export for TherapistDashboard compatibility
+export { getPhobia };

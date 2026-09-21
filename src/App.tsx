@@ -8,12 +8,14 @@ import PatientDashboard from '@/components/PatientDashboard';
 import TherapistDashboard from '@/components/TherapistDashboard';
 import GameJourney from '@/components/GameJourney';
 import VRModeScreen from '@/components/VRModeScreen';
+import ScenarioChoiceScreen from '@/components/ScenarioChoiceScreen';
 import { buildConfig, type QuestionnaireConfig } from '@/data/gameConfig';
 
 type View =
   | 'landing'
   | 'auth'
   | 'questionnaire'
+  | 'scenario-choice'
   | 'patient-dashboard'
   | 'therapist-dashboard'
   | 'game'
@@ -25,21 +27,24 @@ export default function App() {
   const { session, profile, loading } = useAuth();
   const { addNotification } = useNotifications();
   const [view, setView] = useState<View>('landing');
-  const [gameData, setGameData] = useState<{ sessionId: string | null; phobiaType: string; likeType: string }>({
+  const [gameData, setGameData] = useState<{ sessionId: string | null; phobiaType: string; likeType: string; customPhobiaLabel?: string }>({
     sessionId: null,
     phobiaType: 'heights',
     likeType: 'cats',
   });
   const [gameConfig, setGameConfig] = useState<QuestionnaireConfig>(DEFAULT_CONFIG);
 
-  function goToGame(sessionId: string | null, phobiaType: string, likeType: string, answers?: string[]) {
-    setGameData({ sessionId, phobiaType, likeType });
+  function goToScenarioChoice(sessionId: string | null, phobiaType: string, likeType: string, answers?: string[], customPhobiaLabel?: string) {
+    setGameData({ sessionId, phobiaType, likeType, customPhobiaLabel });
     if (answers) setGameConfig(buildConfig(answers));
+    setView('scenario-choice');
+  }
+
+  function goToGame() {
     setView('game');
   }
 
-  function goToVR(phobiaType: string, likeType: string) {
-    setGameData({ sessionId: null, phobiaType, likeType });
+  function goToVR() {
     setView('vr');
     addNotification({
       title: 'وضع الواقع الافتراضي',
@@ -64,7 +69,21 @@ export default function App() {
     if (view === 'questionnaire') {
       return (
         <QuestionnaireScreen
-          onComplete={(sessionId, phobiaType, likeType, answers) => goToGame(sessionId, phobiaType, likeType, answers)}
+          onComplete={(sessionId, phobiaType, likeType, answers, customPhobiaLabel) => goToScenarioChoice(sessionId, phobiaType, likeType, answers, customPhobiaLabel)}
+          onBack={() => setView('patient-dashboard')}
+        />
+      );
+    }
+
+    if (view === 'scenario-choice') {
+      return (
+        <ScenarioChoiceScreen
+          phobiaType={gameData.phobiaType}
+          customPhobiaLabel={gameData.customPhobiaLabel}
+          likeType={gameData.likeType}
+          config={gameConfig}
+          onChooseImagination={goToGame}
+          onChooseVR={goToVR}
           onBack={() => setView('patient-dashboard')}
         />
       );
@@ -77,6 +96,7 @@ export default function App() {
           phobiaType={gameData.phobiaType}
           likeType={gameData.likeType}
           config={gameConfig}
+          customPhobiaLabel={gameData.customPhobiaLabel}
           onBack={() => setView('patient-dashboard')}
         />
       );
@@ -87,6 +107,8 @@ export default function App() {
         <VRModeScreen
           phobiaType={gameData.phobiaType}
           likeType={gameData.likeType}
+          config={gameConfig}
+          customPhobiaLabel={gameData.customPhobiaLabel}
           onBack={() => setView('patient-dashboard')}
         />
       );
@@ -95,8 +117,14 @@ export default function App() {
     return (
       <PatientDashboard
         onStartQuestionnaire={() => setView('questionnaire')}
-        onContinueGame={(sessionId, phobiaType, likeType) => goToGame(sessionId, phobiaType, likeType)}
-        onStartVR={(phobiaType, likeType) => goToVR(phobiaType, likeType)}
+        onContinueGame={(sessionId, phobiaType, likeType) => {
+          setGameData({ sessionId, phobiaType, likeType });
+          setView('game');
+        }}
+        onStartVR={(phobiaType, likeType) => {
+          setGameData({ sessionId: null, phobiaType, likeType });
+          goToVR();
+        }}
       />
     );
   }

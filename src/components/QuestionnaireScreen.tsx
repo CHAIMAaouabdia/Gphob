@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth';
 import Header from './Header';
 
 interface QuestionnaireScreenProps {
-  onComplete: (sessionId: string, phobiaType: string, likeType: string, answers: string[]) => void;
+  onComplete: (sessionId: string, phobiaType: string, likeType: string, answers: string[], customPhobiaLabel?: string) => void;
   onBack: () => void;
 }
 
@@ -14,11 +14,13 @@ export default function QuestionnaireScreen({ onComplete, onBack }: Questionnair
   const { profile } = useAuth();
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<string[]>(Array(QUESTIONS.length).fill(''));
+  const [customPhobiaText, setCustomPhobiaText] = useState('');
   const [saving, setSaving] = useState(false);
 
   const question = QUESTIONS[currentQ];
   const isLast = currentQ === QUESTIONS.length - 1;
-  const canProceed = answers[currentQ] !== '';
+  const isOtherSelected = question.allowOther && answers[currentQ] === 'other';
+  const canProceed = answers[currentQ] !== '' && (!isOtherSelected || customPhobiaText.trim().length > 0);
 
   function selectOption(value: string) {
     const newAnswers = [...answers];
@@ -29,28 +31,30 @@ export default function QuestionnaireScreen({ onComplete, onBack }: Questionnair
   async function handleNext() {
     if (!isLast) { setCurrentQ((q) => q + 1); return; }
     setSaving(true);
-    // New indices: phobia=0, gender=1, age=2, trigger=3, intensity=4, frequency=5,
-    // avoidance=6, symptom=7, duration=8, impact=9, calming=10, like=11
     const phobiaAnswer = answers[0];
     const genderAnswer = answers[1];
     const ageAnswer = answers[2];
     const intensityAnswer = answers[4];
     const likeAnswer = answers[11];
+
+    const isOther = phobiaAnswer === 'other';
+    const customLabel = isOther ? customPhobiaText.trim() : '';
     const phobiaInfo = PHOBIA_MAP[phobiaAnswer] || { phobiaType: 'heights', label: 'المرتفعات' };
+    const effectiveLabel = isOther ? (customLabel || 'خوف مخصّص') : phobiaInfo.label;
     const intensity = INTENSITY_MAP[intensityAnswer] || 5;
     const answerIndices = answers.map((a, i) => { const idx = QUESTIONS[i].options.findIndex((o) => o.value === a); return idx >= 0 ? idx : 0; });
+
     const { data, error } = await supabase.from('questionnaire_sessions').insert({
       patient_id: profile?.id,
       answers: answerIndices,
       phobia_type: phobiaInfo.phobiaType,
       intensity,
       like_type: likeAnswer,
-      recommended: `مسار علاجي تدريجي لمخاوف ${phobiaInfo.label}`,
+      recommended: `مسار علاجي تدريجي لمعالجة «${effectiveLabel}»`,
     }).select().maybeSingle();
     setSaving(false);
     if (error || !data) return;
 
-    // Update profile with gender and age if not already set
     if (profile && (genderAnswer || ageAnswer)) {
       await supabase.from('profiles').update({
         gender: genderAnswer || null,
@@ -58,7 +62,7 @@ export default function QuestionnaireScreen({ onComplete, onBack }: Questionnair
       }).eq('id', profile.id);
     }
 
-    onComplete(data.id, phobiaInfo.phobiaType, likeAnswer, answers);
+    onComplete(data.id, phobiaInfo.phobiaType, likeAnswer, answers, isOther ? customLabel : undefined);
   }
 
   const pct = Math.round(((currentQ + 1) / QUESTIONS.length) * 100);
@@ -116,6 +120,20 @@ export default function QuestionnaireScreen({ onComplete, onBack }: Questionnair
                 );
               })}
             </div>
+
+            {isOtherSelected && (
+              <div className="mt-4 anim-fade-up">
+                <label className="block text-sm font-semibold text-sky-800 dark:text-sky-200 mb-2">اكتب نوع الخوف الذي تعاني منه</label>
+                <input
+                  type="text"
+                  value={customPhobiaText}
+                  onChange={(e) => setCustomPhobiaText(e.target.value)}
+                  placeholder="مثال: الخوف من البحر، الخوف من الظلام..."
+                  className="w-full rounded-2xl border-2 border-sky-200 dark:border-slate-600 bg-white/80 dark:bg-slate-800/80 px-4 py-3.5 text-sky-950 dark:text-sky-50 placeholder:text-sky-400 dark:placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none transition-colors"
+                  autoFocus
+                />
+              </div>
+            )}
           </div>
 
           <button

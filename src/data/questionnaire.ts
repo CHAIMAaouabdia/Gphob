@@ -2,6 +2,8 @@ export interface Question {
   id: number;
   text: string;
   options: { label: string; value: string }[];
+  /** When true, selecting this question's last option reveals a text input */
+  allowOther?: boolean;
 }
 
 export const QUESTIONS: Question[] = [
@@ -13,7 +15,9 @@ export const QUESTIONS: Question[] = [
       { label: 'العناكب والحشرات', value: 'spiders' },
       { label: 'الأماكن المغلقة والضيقة', value: 'enclosed' },
       { label: 'الزحام والأماكن المكتظة', value: 'crowds' },
+      { label: 'أخرى (اكتبها بنفسك)', value: 'other' },
     ],
+    allowOther: true,
   },
   {
     id: 2,
@@ -132,6 +136,7 @@ export const PHOBIA_MAP: Record<string, { phobiaType: string; label: string }> =
   spiders: { phobiaType: 'spiders', label: 'العناكب' },
   enclosed: { phobiaType: 'enclosed', label: 'الأماكن المغلقة' },
   crowds: { phobiaType: 'crowds', label: 'الزحام' },
+  other: { phobiaType: 'other', label: 'خوف مخصّص' },
 };
 
 export const INTENSITY_MAP: Record<string, number> = {
