@@ -98,23 +98,20 @@ export default function ScenarioChoiceScreen({ phobiaType, customPhobiaLabel, li
             </div>
           </div>
 
-          {/* Level preview */}
+          {/* Scenario narrative */}
           <div className="rounded-2xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-sky-100 dark:border-slate-700 p-6 anim-fade-up">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="w-5 h-5 text-sky-500 dark:text-sky-400" />
-              <h2 className="text-base font-bold text-sky-950 dark:text-sky-50">معاينة المستويات</h2>
+              <h2 className="text-base font-bold text-sky-950 dark:text-sky-50">السيناريو الكامل</h2>
             </div>
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-              {phobia.levels.map((lvl, i) => (
-                <div key={i} className="flex items-start gap-3 rounded-xl bg-sky-50/60 dark:bg-slate-700/30 px-3 py-2.5">
-                  <span className="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center justify-center">{i + 1}</span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-sky-900 dark:text-sky-100 truncate">{lvl.title}</p>
-                    <p className="text-xs text-sky-600/70 dark:text-slate-400 truncate">{lvl.scene.slice(0, 60)}...</p>
-                  </div>
-                </div>
-              ))}
+            <div className="rounded-xl bg-sky-50/60 dark:bg-slate-700/30 p-4 max-h-64 overflow-y-auto">
+              <p className="text-sm text-sky-900/90 dark:text-slate-200 leading-loose whitespace-pre-line">
+                {phobia.levels.map((lvl, i) => `${i + 1}. ${lvl.scene}`).join('\n\n')}
+              </p>
             </div>
+            <p className="mt-3 text-xs text-sky-500 dark:text-slate-400 leading-relaxed">
+              هذا النص يتحوّل تلقائيًا إلى مشاهد مرئية متحرّكة عند اختيار وضع الواقع الافتراضي وربط النظارات.
+            </p>
           </div>
 
           {/* Mode choice */}

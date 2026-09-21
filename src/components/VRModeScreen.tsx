@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Glasses, Play, Wifi, WifiOff, CheckCircle2, 
 import Header from './Header';
 import { getOrCreatePhobia, type PhobiaId, type LikeId, LIKES, type Level } from '@/data/journey';
 import type { QuestionnaireConfig } from '@/data/gameConfig';
+import VRHeightsScene from './VRHeightsScene';
 
 interface VRModeScreenProps {
   phobiaType: string;
@@ -209,30 +210,34 @@ export default function VRModeScreen({ phobiaType, likeType, config, customPhobi
           </div>
         </div>
 
-        {/* VR immersive scene */}
-        <div className="relative rounded-3xl overflow-hidden shadow-xl shadow-sky-200/40 dark:shadow-slate-900/50 anim-scale">
-          <img src={level.image} alt={level.alt} className="w-full h-64 object-cover" loading="eager" />
-          {/* VR overlay effect */}
-          <div className="absolute inset-0 bg-gradient-to-t from-sky-950/40 via-transparent to-sky-950/20 pointer-events-none" />
+        {/* VR immersive animated scene */}
+        <div className="relative rounded-3xl overflow-hidden shadow-xl shadow-sky-200/40 dark:shadow-slate-900/50 anim-scale bg-sky-900" style={{ aspectRatio: '16/10' }}>
+          {phobiaType === 'heights' ? (
+            <VRHeightsScene
+              levelIndex={levelIndex}
+              totalLevels={total}
+              likeEmoji={likeEmoji}
+              breathingActive={breathingActive}
+            />
+          ) : (
+            <img src={level.image} alt={level.alt} className="w-full h-full object-cover" loading="eager" />
+          )}
+          {/* VR overlay border */}
           <div className="absolute inset-0 border-4 border-white/10 rounded-3xl pointer-events-none" />
           {/* VR badge */}
-          <div className="absolute top-3 right-3 bg-sky-950/70 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1.5">
+          <div className="absolute top-3 right-3 bg-sky-950/70 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1.5 z-10">
             <Glasses className="w-4 h-4 text-white" />
             <span className="text-xs font-semibold text-white">VR</span>
           </div>
           {/* Companion badge */}
-          <div className="absolute top-3 left-3 bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm rounded-full px-3 py-1.5 text-sm font-semibold text-sky-900 dark:text-sky-100 shadow-sm flex items-center gap-1.5">
+          <div className="absolute top-3 left-3 bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm rounded-full px-3 py-1.5 text-sm font-semibold text-sky-900 dark:text-sky-100 shadow-sm flex items-center gap-1.5 z-10">
             <span className="text-base">{likeEmoji}</span>
             {likeLabel} بجانبك
           </div>
-          {/* Breathing circle */}
-          {breathingActive && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/40 flex items-center justify-center anim-float">
-                <span className="text-white text-sm font-semibold">تنفّس</span>
-              </div>
-            </div>
-          )}
+          {/* Level indicator on scene */}
+          <div className="absolute bottom-3 left-3 bg-sky-950/70 backdrop-blur-sm rounded-lg px-3 py-1.5 z-10">
+            <span className="text-xs font-semibold text-white">المشهد {levelIndex + 1} — {phobiaType === 'heights' ? 'ارتفاع تدريجي' : 'تعرّض تدريجي'}</span>
+          </div>
         </div>
 
         {/* Level title */}
