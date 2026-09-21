@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { PlayCircle, ClipboardList, Trophy, TrendingUp, ChevronLeft, Gamepad2, Glasses, Clock, Target, Flame, Award, Activity } from 'lucide-react';
+import { PlayCircle, ClipboardList, Trophy, TrendingUp, BookOpen, Glasses, Clock, Target, Flame, Award, Activity } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { supabase, type GameProgressRow, type QuestionnaireSession } from '@/lib/supabase';
 import { PHOBIAS, getPhobia, LIKES } from '@/data/journey';
@@ -210,8 +210,8 @@ export default function PatientDashboard({ onStartQuestionnaire, onContinueGame,
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <button onClick={() => onContinueGame(p.session_id || '', p.phobia_type, p.like_type)} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-white dark:bg-slate-600 border-2 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-sm font-semibold px-4 py-2.5 transition-all">
-                        <Gamepad2 className="w-4 h-4" />
-                        متابعة باللعب
+                        <BookOpen className="w-4 h-4" />
+                        متابعة الرحلة
                       </button>
                       <button onClick={() => onStartVR(p.phobia_type, p.like_type)} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-600 hover:to-indigo-600 text-white text-sm font-semibold px-4 py-2.5 transition-all shadow-md shadow-sky-200/40 dark:shadow-sky-900/30">
                         <Glasses className="w-4 h-4" />

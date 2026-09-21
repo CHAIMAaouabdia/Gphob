@@ -119,7 +119,7 @@ export default function App() {
         onStartQuestionnaire={() => setView('questionnaire')}
         onContinueGame={(sessionId, phobiaType, likeType) => {
           setGameData({ sessionId, phobiaType, likeType });
-          setView('game');
+          setView('scenario-choice');
         }}
         onStartVR={(phobiaType, likeType) => {
           setGameData({ sessionId: null, phobiaType, likeType });

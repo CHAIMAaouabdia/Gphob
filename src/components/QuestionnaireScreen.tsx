@@ -16,6 +16,7 @@ export default function QuestionnaireScreen({ onComplete, onBack }: Questionnair
   const [answers, setAnswers] = useState<string[]>(Array(QUESTIONS.length).fill(''));
   const [customPhobiaText, setCustomPhobiaText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const question = QUESTIONS[currentQ];
   const isLast = currentQ === QUESTIONS.length - 1;
@@ -53,13 +54,18 @@ export default function QuestionnaireScreen({ onComplete, onBack }: Questionnair
       recommended: `مسار علاجي تدريجي لمعالجة «${effectiveLabel}»`,
     }).select().maybeSingle();
     setSaving(false);
-    if (error || !data) return;
 
     if (profile && (genderAnswer || ageAnswer)) {
       await supabase.from('profiles').update({
         gender: genderAnswer || null,
         age_range: ageAnswer || null,
       }).eq('id', profile.id);
+    }
+
+    if (error || !data) {
+      setSaveError('تعذّر حفظ الاستبيان في قاعدة البيانات، لكن يمكنك متابعة الرحلة.');
+      onComplete('', phobiaInfo.phobiaType, likeAnswer, answers, isOther ? customLabel : undefined);
+      return;
     }
 
     onComplete(data.id, phobiaInfo.phobiaType, likeAnswer, answers, isOther ? customLabel : undefined);

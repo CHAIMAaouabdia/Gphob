@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BookOpen, Glasses, ChevronLeft, Sparkles, Clock, Target, Heart, Wind, Brain } from 'lucide-react';
+import { BookOpen, Glasses, ChevronLeft, ChevronRight, Sparkles, Clock, Target, Heart, Wind, Brain } from 'lucide-react';
 import Header from './Header';
 import { getOrCreatePhobia, type PhobiaId, type LikeId, LIKES } from '@/data/journey';
 import type { QuestionnaireConfig } from '@/data/gameConfig';
